@@ -101,6 +101,17 @@ export class DailyPreviewCalendarView extends ItemView {
 		});
 		this.resizeObserver.observe(root);
 
+		this.registerEvent(
+			this.app.workspace.on('active-leaf-change', () => {
+				this.hoverPreview.hide();
+			}),
+		);
+		this.registerEvent(
+			this.app.workspace.on('layout-change', () => {
+				this.hoverPreview.hide();
+			}),
+		);
+
 		window.requestAnimationFrame(() => {
 			void this.renderCalendar().catch((err) => {
 				console.error('Daily Preview Calendar: render failed', err);
@@ -370,6 +381,7 @@ export class DailyPreviewCalendarView extends ItemView {
 		};
 
 		const openNote = () => {
+			this.hoverPreview.hide();
 			const inMain = isMainAreaLeaf(this.leaf, this.app.workspace);
 			void openOrCreateDailyNote(this.app, date, {
 				target: inMain ? 'tab' : 'main',
@@ -379,6 +391,10 @@ export class DailyPreviewCalendarView extends ItemView {
 
 		root.addEventListener('click', (evt) => {
 			if (evt.defaultPrevented) return;
+			if (this.hoverPreview.isOpen()) {
+				this.hoverPreview.hide();
+				return;
+			}
 			openNote();
 		});
 

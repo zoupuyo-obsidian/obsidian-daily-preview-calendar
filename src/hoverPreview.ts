@@ -8,15 +8,33 @@ export interface HoverPreviewOptions {
 	highlights: WordHighlightRule[];
 }
 
+const LONG_PRESS_MS = 550;
+const MOVE_THRESHOLD_PX = 14;
+
 export class HoverPreviewController {
 	private popover: HTMLElement | null = null;
+	private anchor: HTMLElement | null = null;
 	private showTimer: number | null = null;
 	private hideTimer: number | null = null;
 	private suppressNextClick = false;
 	private longPressTimer: number | null = null;
+	private touchStartX = 0;
+	private touchStartY = 0;
+	private touchCell: HTMLElement | null = null;
+	private dismissCleanup: (() => void) | null = null;
+
+	isOpen(): boolean {
+		return this.popover !== null;
+	}
 
 	dispose(): void {
+		this.hide();
+	}
+
+	hide(): void {
 		this.clearTimers();
+		this.clearTouchState();
+		this.removeDismissListeners();
 		this.removePopover();
 	}
 
@@ -29,16 +47,28 @@ export class HoverPreviewController {
 				evt.preventDefault();
 				evt.stopPropagation();
 				this.suppressNextClick = false;
+				return;
+			}
+			if (this.isOpen()) {
+				evt.preventDefault();
+				evt.stopPropagation();
+				this.hide();
 			}
 		};
 
 		cell.addEventListener('click', onClickCapture, true);
 
 		cell.addEventListener('mouseenter', () => {
+			if (this.isTouchLikeEnvironment()) {
+				return;
+			}
 			this.scheduleShow(cell, getOptions);
 		});
 
 		cell.addEventListener('mouseleave', () => {
+			if (this.isTouchLikeEnvironment()) {
+				return;
+			}
 			this.scheduleHide();
 		});
 
@@ -46,27 +76,94 @@ export class HoverPreviewController {
 			if (evt.pointerType !== 'touch') {
 				return;
 			}
-			this.clearLongPress();
-			this.longPressTimer = window.setTimeout(() => {
-				const options = getOptions();
-				if (!options || options.items.length === 0) {
-					return;
-				}
-				this.suppressNextClick = true;
-				this.show(cell, options);
-			}, 480);
+			this.beginTouchPress(cell, evt.clientX, evt.clientY, getOptions);
 		});
 
-		const cancelLongPress = () => this.clearLongPress();
-		cell.addEventListener('pointerup', cancelLongPress);
-		cell.addEventListener('pointercancel', cancelLongPress);
-		cell.addEventListener('pointerleave', cancelLongPress);
+		cell.addEventListener('pointermove', (evt) => {
+			if (evt.pointerType !== 'touch' || this.touchCell !== cell) {
+				return;
+			}
+			if (this.pointerMovedTooFar(evt.clientX, evt.clientY)) {
+				this.cancelTouchPress(cell);
+			}
+		});
+
+		const endTouch = (evt: PointerEvent) => {
+			if (evt.pointerType !== 'touch' || this.touchCell !== cell) {
+				return;
+			}
+			this.cancelTouchPress(cell);
+		};
+
+		cell.addEventListener('pointerup', endTouch);
+		cell.addEventListener('pointercancel', endTouch);
+		cell.addEventListener('pointerleave', endTouch);
 
 		return { onClickCapture };
 	}
 
 	showManual(anchor: HTMLElement, options: HoverPreviewOptions): void {
 		this.show(anchor, options);
+	}
+
+	private isTouchLikeEnvironment(): boolean {
+		return (
+			typeof window !== 'undefined' &&
+			window.matchMedia('(hover: none), (pointer: coarse)').matches
+		);
+	}
+
+	private beginTouchPress(
+		cell: HTMLElement,
+		x: number,
+		y: number,
+		getOptions: () => HoverPreviewOptions | null,
+	): void {
+		this.cancelTouchPress(this.touchCell ?? undefined);
+		this.touchCell = cell;
+		this.touchStartX = x;
+		this.touchStartY = y;
+		cell.addClass('is-touch-pressing');
+
+		this.clearLongPress();
+		this.longPressTimer = window.setTimeout(() => {
+			this.longPressTimer = null;
+			const options = getOptions();
+			if (!options || options.items.length === 0) {
+				this.cancelTouchPress(cell);
+				return;
+			}
+			this.suppressNextClick = true;
+			cell.removeClass('is-touch-pressing');
+			this.touchCell = null;
+			this.show(cell, options);
+		}, LONG_PRESS_MS);
+	}
+
+	private cancelTouchPress(cell?: HTMLElement): void {
+		this.clearLongPress();
+		const target = cell ?? this.touchCell;
+		target?.removeClass('is-touch-pressing');
+		if (!cell || this.touchCell === cell) {
+			this.touchCell = null;
+		}
+	}
+
+	private clearTouchState(): void {
+		if (this.touchCell) {
+			this.touchCell.removeClass('is-touch-pressing');
+			this.touchCell = null;
+		}
+		if (this.anchor) {
+			this.anchor.removeClass('is-preview-anchor');
+			this.anchor = null;
+		}
+	}
+
+	private pointerMovedTooFar(x: number, y: number): boolean {
+		const dx = x - this.touchStartX;
+		const dy = y - this.touchStartY;
+		return Math.hypot(dx, dy) > MOVE_THRESHOLD_PX;
 	}
 
 	private scheduleShow(
@@ -85,7 +182,7 @@ export class HoverPreviewController {
 
 	private scheduleHide(): void {
 		this.clearShowTimer();
-		this.hideTimer = window.setTimeout(() => this.removePopover(), 180);
+		this.hideTimer = window.setTimeout(() => this.hide(), 180);
 	}
 
 	private clearShowTimer(): void {
@@ -113,7 +210,14 @@ export class HoverPreviewController {
 
 	private show(anchor: HTMLElement, options: HoverPreviewOptions): void {
 		this.clearTimers();
+		this.removeDismissListeners();
 		this.removePopover();
+
+		if (this.anchor && this.anchor !== anchor) {
+			this.anchor.removeClass('is-preview-anchor');
+		}
+		this.anchor = anchor;
+		anchor.addClass('is-preview-anchor');
 
 		const doc = anchor.ownerDocument;
 		const popover = doc.body.createDiv({
@@ -159,12 +263,57 @@ export class HoverPreviewController {
 
 		this.popover = popover;
 		this.positionPopover(anchor, popover);
+		this.installDismissListeners(doc);
+	}
+
+	private installDismissListeners(doc: Document): void {
+		this.removeDismissListeners();
+
+		const onPointerDown = (evt: PointerEvent) => {
+			const target = evt.target;
+			if (!(target instanceof Node)) {
+				return;
+			}
+			if (this.popover?.contains(target)) {
+				return;
+			}
+			if (this.anchor?.contains(target)) {
+				return;
+			}
+			this.hide();
+		};
+
+		const onKeyDown = (evt: KeyboardEvent) => {
+			if (evt.key === 'Escape') {
+				this.hide();
+			}
+		};
+
+		const onScroll = () => this.hide();
+
+		doc.addEventListener('pointerdown', onPointerDown, true);
+		doc.addEventListener('keydown', onKeyDown, true);
+		doc.defaultView?.addEventListener('scroll', onScroll, true);
+
+		this.dismissCleanup = () => {
+			doc.removeEventListener('pointerdown', onPointerDown, true);
+			doc.removeEventListener('keydown', onKeyDown, true);
+			doc.defaultView?.removeEventListener('scroll', onScroll, true);
+			this.dismissCleanup = null;
+		};
+	}
+
+	private removeDismissListeners(): void {
+		this.dismissCleanup?.();
 	}
 
 	private positionPopover(anchor: HTMLElement, popover: HTMLElement): void {
 		const rect = anchor.getBoundingClientRect();
 		const margin = 8;
-		const maxW = Math.min(420, anchor.ownerDocument.defaultView?.innerWidth ?? 420 - margin * 2);
+		const maxW = Math.min(
+			420,
+			(anchor.ownerDocument.defaultView?.innerWidth ?? 420) - margin * 2,
+		);
 
 		popover.toggleClass('is-wide', maxW >= 400);
 

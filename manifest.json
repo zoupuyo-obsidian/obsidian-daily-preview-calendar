@@ -1,8 +1,8 @@
 {
 	"id": "daily-preview-calendar",
 	"name": "Daily Preview Calendar",
-	"version": "1.0.2",
-	"minAppVersion": "1.13.0",
+	"version": "1.0.3",
+	"minAppVersion": "1.7.2",
 	"description": "Browse Daily Notes in week and month calendars with rich Markdown previews in each day cell.",
 	"author": "zoupuyo",
 	"authorUrl": "https://github.com/zoupuyo-obsidian",

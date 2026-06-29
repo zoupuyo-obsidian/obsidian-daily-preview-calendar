@@ -117,8 +117,19 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.daily-preview-calendar__cell:hover {
+@media (hover: hover) and (pointer: fine) {
+	.daily-preview-calendar__cell:hover {
+		border-color: var(--interactive-accent);
+	}
+}
+
+.daily-preview-calendar__cell.is-touch-pressing,
+.daily-preview-calendar__cell.is-preview-anchor {
 	border-color: var(--interactive-accent);
+}
+
+.daily-preview-calendar__cell.is-touch-pressing {
+	opacity: 0.92;
 }
 
 .daily-preview-calendar__cell.is-today {
@@ -280,7 +291,8 @@
 	position: fixed;
 	top: var(--dpc-popover-top, 0);
 	left: var(--dpc-popover-left, 0);
-	z-index: 1000;
+	z-index: var(--layer-popover, 1000);
+	touch-action: manipulation;
 	max-height: min(60vh, 480px);
 	max-width: min(420px, calc(100vw - 16px));
 	overflow: auto;

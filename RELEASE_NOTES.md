@@ -1,3 +1,15 @@
+## Daily Preview Calendar 1.0.4
+
+- Same mobile touch fixes as 1.0.3.
+- Requires Obsidian 1.13.0+ (`getSettingDefinitions` settings API).
+
+## Daily Preview Calendar 1.0.3
+
+- Fix mobile long-press preview: dismiss on tap outside, navigation, and scroll.
+- Improve tap vs long-press handling (movement threshold, longer press duration).
+- Fix sticky cell highlight on touch devices.
+- For Obsidian 1.7.2 through 1.12.x.
+
 ## Daily Preview Calendar 1.0.2
 
 - Migrate settings tab to declarative `getSettingDefinitions()` API (Obsidian 1.13+).
