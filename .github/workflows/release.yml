@@ -38,13 +38,21 @@ jobs:
                       main.js
                       ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
 
-            - name: Create release
+            - name: Publish release assets
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                   tag="${GITHUB_REF#refs/tags/}"
+                  assets=(main.js manifest.json)
+                  if [ "${{ steps.styles.outputs.exists }}" = "true" ]; then
+                      assets+=(styles.css)
+                  fi
 
-                  gh release create "$tag" \
-                    --title="Daily Preview Calendar $tag" \
-                    --notes-file RELEASE_NOTES.md \
-                    main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}
+                  if gh release view "$tag" >/dev/null 2>&1; then
+                      gh release upload "$tag" "${assets[@]}" --clobber
+                  else
+                      gh release create "$tag" \
+                        --title="Daily Preview Calendar $tag" \
+                        --notes-file RELEASE_NOTES.md \
+                        "${assets[@]}"
+                  fi

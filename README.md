@@ -22,7 +22,7 @@ Daily note folder and date format follow the core **Daily notes** plugin setting
 
 ## Requirements
 
-- Obsidian 1.5.0+
+- Obsidian 1.13.0+
 - Core plugin **Daily notes** enabled
 
 ## Installation (manual)

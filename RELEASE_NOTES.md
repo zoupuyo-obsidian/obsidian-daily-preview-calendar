@@ -1,3 +1,8 @@
+## Daily Preview Calendar 1.0.2
+
+- Migrate settings tab to declarative `getSettingDefinitions()` API (Obsidian 1.13+).
+- Requires Obsidian 1.13.0 or later.
+
 ## Daily Preview Calendar 1.0.1
 
 - Pass Obsidian Community automated review (lint and release notes).

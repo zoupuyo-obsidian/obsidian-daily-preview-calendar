@@ -7,7 +7,7 @@ export function applyFontVariables(
 	applyOneFont(root, '--dpc-ui-font-family', '--dpc-ui-font-size', settings.uiFont);
 	applyOneFont(root, '--dpc-body-font-family', '--dpc-body-font-size', settings.bodyFont);
 
-	// ツールバー・プレビューへ直接適用（CSS 変数だけでは Obsidian テーマに負ける場合の保険）
+	// Toolbar and preview inherit CSS variables; apply sizes when theme overrides defaults.
 	const toolbar = root.querySelector('.daily-preview-calendar__toolbar');
 	if (toolbar instanceof HTMLElement) {
 		applyDirectFont(toolbar, settings.uiFont);
