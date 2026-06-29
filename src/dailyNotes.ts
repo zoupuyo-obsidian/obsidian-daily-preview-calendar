@@ -1,4 +1,4 @@
-import { App, Notice, TFile } from 'obsidian';
+import { App, Notice, TFile, moment } from 'obsidian';
 import {
 	appHasDailyNotesPluginLoaded,
 	createDailyNote,
@@ -6,8 +6,7 @@ import {
 	getDailyNote,
 	getDailyNoteSettings,
 } from 'obsidian-daily-notes-interface';
-import type { Moment } from 'moment';
-import { extractPreviewItems, fitItemsToHeight, type PreviewItem } from './previewContent';
+import { extractPreviewItems, type PreviewItem } from './previewContent';
 import type { DailyPreviewCalendarSettings } from './settings';
 import { openFileInWorkspace, type OpenTarget } from './workspaceUtil';
 
@@ -31,7 +30,7 @@ export function readDailyNotesConfig(): DailyNotesConfig {
 }
 
 export function getNoteForDate(
-	date: Moment,
+	date: moment.Moment,
 	dailyNotes?: Record<string, TFile>,
 ): TFile | null {
 	const map = dailyNotes ?? getAllDailyNotes();
@@ -49,12 +48,12 @@ export function getAllDailyNotesMap(): Record<string, TFile> {
 
 export async function openOrCreateDailyNote(
 	app: App,
-	date: Moment,
+	date: moment.Moment,
 	options: { target?: OpenTarget; noticeCreateFailed?: string } = {},
 ): Promise<TFile | null> {
 	if (!isDailyNotesAvailable()) {
 		new Notice(
-			'Daily Preview Calendar: Enable the core "Daily notes" plugin.',
+			'Daily preview calendar: Enable the core "daily notes" plugin.',
 		);
 		return null;
 	}

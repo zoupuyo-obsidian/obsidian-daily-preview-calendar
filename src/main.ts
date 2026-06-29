@@ -1,7 +1,6 @@
 import { Notice, Plugin, TFile, WorkspaceLeaf } from 'obsidian';
 import {
 	DailyPreviewCalendarSettingTab,
-	DEFAULT_SETTINGS,
 	migrateSettings,
 	type DailyPreviewCalendarSettings,
 	type OpenLocation,
@@ -62,7 +61,7 @@ export default class DailyPreviewCalendarPlugin extends Plugin {
 		const lang = this.settings.uiLanguage;
 
 		this.addCommand({
-			id: 'open-daily-preview-calendar',
+			id: 'open',
 			name: t(lang, 'cmdOpen'),
 			callback: () => {
 				void this.activateView();
@@ -70,7 +69,7 @@ export default class DailyPreviewCalendarPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'open-daily-preview-calendar-sidebar',
+			id: 'open-sidebar',
 			name: t(lang, 'cmdOpenSidebar'),
 			callback: () => {
 				void this.activateView('sidebar');
@@ -78,16 +77,12 @@ export default class DailyPreviewCalendarPlugin extends Plugin {
 		});
 
 		this.addCommand({
-			id: 'open-daily-preview-calendar-main',
+			id: 'open-main',
 			name: t(lang, 'cmdOpenMain'),
 			callback: () => {
 				void this.activateView('main');
 			},
 		});
-	}
-
-	onunload(): void {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE_DAILY_PREVIEW);
 	}
 
 	async activateView(location?: OpenLocation): Promise<void> {
@@ -100,7 +95,7 @@ export default class DailyPreviewCalendarPlugin extends Plugin {
 
 		const existing = workspace.getLeavesOfType(VIEW_TYPE_DAILY_PREVIEW)[0];
 		if (existing) {
-			workspace.revealLeaf(existing);
+			await workspace.revealLeaf(existing);
 			return;
 		}
 
@@ -109,7 +104,7 @@ export default class DailyPreviewCalendarPlugin extends Plugin {
 				type: VIEW_TYPE_DAILY_PREVIEW,
 				active: true,
 			});
-			workspace.revealLeaf(leaf);
+			await workspace.revealLeaf(leaf);
 		};
 
 		if (loc === 'main') {

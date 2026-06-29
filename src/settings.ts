@@ -132,8 +132,7 @@ export function migrateSettings(
 	},
 
 ): DailyPreviewCalendarSettings {
-
-	const merged = Object.assign({}, DEFAULT_SETTINGS, raw) as DailyPreviewCalendarSettings;
+	const merged = { ...DEFAULT_SETTINGS, ...raw };
 
 
 
@@ -353,7 +352,9 @@ export class DailyPreviewCalendarSettingTab extends PluginSettingTab {
 
 				const names = weekdayLabelNames(this.lang());
 
-				names.forEach((label, i) => dropdown.addOption(String(i), label));
+				for (let i = 0; i < names.length; i++) {
+					dropdown.addOption(String(i), names[i]!);
+				}
 
 				dropdown
 
@@ -515,15 +516,13 @@ export class DailyPreviewCalendarSettingTab extends PluginSettingTab {
 
 		const s = this.plugin.settings;
 
-		containerEl.createEl('h3', { text: this.L('settingsSections') });
+		new Setting(containerEl)
 
-		containerEl.createEl('p', {
+			.setName(this.L('settingsSections'))
 
-			cls: 'setting-item-description',
+			.setDesc(this.L('settingsSectionsDesc'))
 
-			text: this.L('settingsSectionsDesc'),
-
-		});
+			.setHeading();
 
 
 
@@ -635,15 +634,13 @@ export class DailyPreviewCalendarSettingTab extends PluginSettingTab {
 
 		const s = this.plugin.settings;
 
-		containerEl.createEl('h3', { text: this.L('settingsWordHighlights') });
+		new Setting(containerEl)
 
-		containerEl.createEl('p', {
+			.setName(this.L('settingsWordHighlights'))
 
-			cls: 'setting-item-description',
+			.setDesc(this.L('settingsWordHighlightsDesc'))
 
-			text: this.L('settingsWordHighlightsDesc'),
-
-		});
+			.setHeading();
 
 
 

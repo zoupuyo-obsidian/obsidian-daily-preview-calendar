@@ -1,5 +1,4 @@
 import { App, ItemView, Menu, moment, TFile, WorkspaceLeaf } from 'obsidian';
-import type { Moment } from 'moment';
 import type DailyPreviewCalendarPlugin from '../main';
 import {
 	getAllDailyNotesMap,
@@ -26,7 +25,7 @@ export const VIEW_TYPE_DAILY_PREVIEW = 'daily-preview-calendar';
 interface DayCellParts {
 	root: HTMLElement;
 	preview: HTMLElement;
-	date: Moment;
+	date: moment.Moment;
 	filePath: string | null;
 	allItems: PreviewItem[];
 }
@@ -35,7 +34,7 @@ export class DailyPreviewCalendarView extends ItemView {
 	navigation = false;
 
 	plugin: DailyPreviewCalendarPlugin;
-	anchorDate: Moment;
+	anchorDate: moment.Moment;
 	viewMode: CalendarViewMode;
 	private gridEl: HTMLElement | null = null;
 	private periodLabelEl: HTMLElement | null = null;
@@ -223,7 +222,7 @@ export class DailyPreviewCalendarView extends ItemView {
 		void this.renderCalendar();
 	}
 
-	private getWeekStart(date: Moment): Moment {
+	private getWeekStart(date: moment.Moment): moment.Moment {
 		const startOn = this.plugin.settings.weekStartsOn;
 		const d = date.clone().startOf('day');
 		const current = d.day();
@@ -231,7 +230,7 @@ export class DailyPreviewCalendarView extends ItemView {
 		return d.subtract(diff, 'day');
 	}
 
-	private getDatesInView(): Moment[] {
+	private getDatesInView(): moment.Moment[] {
 		if (this.viewMode === 'week') {
 			const start = this.getWeekStart(this.anchorDate);
 			return Array.from({ length: 7 }, (_, i) => start.clone().add(i, 'day'));
@@ -239,7 +238,7 @@ export class DailyPreviewCalendarView extends ItemView {
 
 		const monthStart = this.anchorDate.clone().startOf('month');
 		const gridStart = this.getWeekStart(monthStart);
-		const dates: Moment[] = [];
+		const dates: moment.Moment[] = [];
 		let cursor = gridStart.clone();
 		for (let i = 0; i < 42; i++) {
 			dates.push(cursor.clone());
@@ -337,7 +336,7 @@ export class DailyPreviewCalendarView extends ItemView {
 
 	private buildDayCell(
 		parent: HTMLElement,
-		date: Moment,
+		date: moment.Moment,
 		isOutsideMonth: boolean,
 	): DayCellParts {
 		const file = getNoteForDate(date, this.dailyNotesMap);
@@ -404,7 +403,7 @@ export class DailyPreviewCalendarView extends ItemView {
 		return cellParts;
 	}
 
-	private formatCellTitle(date: Moment): string {
+	private formatCellTitle(date: moment.Moment): string {
 		const locale = this.lang() === 'ja' ? 'ja' : 'en';
 		return locale === 'ja'
 			? date.format('YYYY年M月D日')
@@ -413,7 +412,7 @@ export class DailyPreviewCalendarView extends ItemView {
 
 	private showCellMenu(
 		evt: MouseEvent,
-		date: Moment,
+		date: moment.Moment,
 		file: TFile | null,
 		openNote: () => void,
 		cell: DayCellParts,
@@ -469,29 +468,8 @@ export class DailyPreviewCalendarView extends ItemView {
 
 	private updateResponsiveLayout(): void {
 		if (!this.gridEl || !this.contentEl) return;
-		const w = this.contentEl.clientWidth;
-		const narrow = w < 520;
+		const narrow = this.contentEl.clientWidth < 520;
 		this.gridEl.toggleClass('is-narrow', narrow);
-
-		const body = this.gridEl.querySelector(
-			'.daily-preview-calendar__body',
-		) as HTMLElement | null;
-		const header = this.gridEl.querySelector(
-			'.daily-preview-calendar__header-row',
-		) as HTMLElement | null;
-		if (!body || !header) return;
-
-		if (this.viewMode === 'week' && narrow) {
-			body.style.gridTemplateColumns = '1fr';
-			body.style.gridTemplateRows = 'repeat(7, minmax(72px, 1fr))';
-			header.style.gridTemplateColumns = '1fr';
-			header.style.display = 'none';
-		} else {
-			body.style.gridTemplateColumns = '';
-			body.style.gridTemplateRows = '';
-			header.style.gridTemplateColumns = '';
-			header.style.display = '';
-		}
 	}
 
 	private refitAllPreviews(): void {

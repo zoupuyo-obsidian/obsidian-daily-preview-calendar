@@ -45,6 +45,6 @@ jobs:
                   tag="${GITHUB_REF#refs/tags/}"
 
                   gh release create "$tag" \
-                    --title="$tag" \
-                    --draft \
+                    --title="Daily Preview Calendar $tag" \
+                    --notes-file RELEASE_NOTES.md \
                     main.js manifest.json ${{ steps.styles.outputs.exists == 'true' && 'styles.css' || '' }}

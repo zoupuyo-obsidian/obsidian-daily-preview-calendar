@@ -8,8 +8,8 @@ export function applyFontVariables(
 	applyOneFont(root, '--dpc-body-font-family', '--dpc-body-font-size', settings.bodyFont);
 
 	// ツールバー・プレビューへ直接適用（CSS 変数だけでは Obsidian テーマに負ける場合の保険）
-	const toolbar = root.querySelector('.daily-preview-calendar__toolbar') as HTMLElement | null;
-	if (toolbar) {
+	const toolbar = root.querySelector('.daily-preview-calendar__toolbar');
+	if (toolbar instanceof HTMLElement) {
 		applyDirectFont(toolbar, settings.uiFont);
 	}
 	for (const preview of Array.from(root.querySelectorAll('.daily-preview-calendar__preview'))) {
