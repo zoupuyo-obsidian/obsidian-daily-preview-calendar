@@ -1,0 +1,338 @@
+.daily-preview-calendar-root {
+	--dpc-ui-font-family: var(--font-interface);
+	--dpc-body-font-family: inherit;
+
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: 8px;
+	gap: 8px;
+	overflow: hidden;
+	container-type: inline-size;
+}
+
+.daily-preview-calendar__toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	flex-shrink: 0;
+	font-family: var(--dpc-ui-font-family, var(--font-interface));
+	font-size: var(--dpc-ui-font-size, var(--font-ui-small));
+}
+
+.daily-preview-calendar__nav {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.daily-preview-calendar__title {
+	font-weight: 600;
+	flex: 1;
+	min-width: 80px;
+}
+
+.daily-preview-calendar__mode-toggle {
+	display: flex;
+	gap: 2px;
+}
+
+.daily-preview-calendar__mode-toggle button {
+	padding: 4px 10px;
+	border-radius: var(--radius-s);
+}
+
+.daily-preview-calendar__mode-toggle button.is-active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.daily-preview-calendar__warning {
+	color: var(--text-warning);
+	font-size: var(--dpc-ui-font-size);
+	flex-shrink: 0;
+}
+
+.daily-preview-calendar__grid {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.daily-preview-calendar__header-row {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.daily-preview-calendar__header-cell {
+	text-align: center;
+	font-size: var(--dpc-ui-font-size);
+	color: var(--text-muted);
+	font-weight: 600;
+	padding: 2px 0;
+}
+
+.daily-preview-calendar__body {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+	gap: 4px;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.daily-preview-calendar__grid.is-week .daily-preview-calendar__body {
+	grid-template-rows: 1fr;
+}
+
+.daily-preview-calendar__grid.is-month .daily-preview-calendar__body {
+	grid-template-rows: repeat(6, minmax(0, 1fr));
+}
+
+.daily-preview-calendar__grid.is-month.is-narrow {
+	overflow-x: auto;
+}
+
+.daily-preview-calendar__grid.is-month.is-narrow .daily-preview-calendar__body,
+.daily-preview-calendar__grid.is-month.is-narrow .daily-preview-calendar__header-row {
+	min-width: 560px;
+}
+
+.daily-preview-calendar__cell {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	min-width: 0;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	cursor: pointer;
+	overflow: hidden;
+	transition: border-color 0.15s ease;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.daily-preview-calendar__cell:hover {
+	border-color: var(--interactive-accent);
+}
+
+.daily-preview-calendar__cell.is-today {
+	border-color: var(--interactive-accent);
+	box-shadow: inset 0 0 0 1px var(--interactive-accent);
+}
+
+.daily-preview-calendar__cell.is-outside {
+	opacity: 0.45;
+}
+
+.daily-preview-calendar__cell.has-note {
+	background: var(--background-secondary);
+}
+
+.daily-preview-calendar__cell-header {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 4px 6px;
+	flex-shrink: 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-family: var(--dpc-ui-font-family, var(--font-interface));
+	font-size: var(--dpc-ui-font-size, var(--font-ui-small));
+}
+
+.daily-preview-calendar__cell-date {
+	font-weight: 700;
+}
+
+.daily-preview-calendar__cell-weekday {
+	font-size: calc(var(--dpc-ui-font-size, var(--font-ui-small)) * 0.9);
+	color: var(--text-muted);
+}
+
+.daily-preview-calendar__preview {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	padding: 4px 6px;
+	font-family: var(--dpc-body-font-family, inherit);
+	font-size: var(--dpc-body-font-size, var(--font-ui-smaller));
+	line-height: 1.35;
+	color: var(--text-normal);
+}
+
+.daily-preview-calendar__grid.is-week .daily-preview-calendar__preview {
+	font-size: var(--dpc-body-font-size, var(--font-ui-small));
+}
+
+.daily-preview-calendar__preview.is-empty::after {
+	content: '—';
+	color: var(--text-faint);
+}
+
+.daily-preview-calendar__line {
+	display: block;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: clip;
+	min-height: 1.35em;
+	font-size: inherit;
+}
+
+.daily-preview-calendar-root.is-line-wrap .daily-preview-calendar__line,
+.daily-preview-calendar__preview.is-wrap .daily-preview-calendar__line {
+	white-space: normal;
+	overflow: visible;
+	word-break: break-word;
+}
+
+.daily-preview-calendar__line.is-heading {
+	font-weight: 600;
+	color: var(--text-muted);
+}
+
+.daily-preview-calendar__line.is-list {
+	display: flex;
+	align-items: baseline;
+	gap: 4px;
+	padding-left: calc(var(--dpc-list-indent, 0) * 12px);
+}
+
+.daily-preview-calendar__list-marker {
+	flex-shrink: 0;
+	color: var(--text-muted);
+	font-size: 0.92em;
+}
+
+.daily-preview-calendar__list-body {
+	flex: 1;
+	min-width: 0;
+}
+
+.daily-preview-calendar__line.is-task-done .daily-preview-calendar__list-body {
+	opacity: 0.65;
+	text-decoration: line-through;
+}
+
+.daily-preview-calendar__line.is-quote {
+	border-left: 2px solid var(--text-faint);
+	padding-left: calc(6px + var(--dpc-quote-depth, 1) * 4px);
+	color: var(--text-muted);
+}
+
+.daily-preview-calendar__line.is-hr {
+	min-height: auto;
+	padding: 2px 0;
+}
+
+.daily-preview-calendar__line.is-hr hr {
+	margin: 0;
+	border: none;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.daily-preview-calendar__line.is-embed,
+.daily-preview-calendar__embed-inline {
+	color: var(--text-accent);
+	font-size: 0.95em;
+}
+
+.daily-preview-calendar__code-block {
+	margin: 2px 0;
+	padding: 4px 6px;
+	background: var(--code-background);
+	border-radius: var(--radius-s);
+	overflow: hidden;
+	font-size: 0.88em;
+	line-height: 1.3;
+	max-height: 4.2em;
+}
+
+.daily-preview-calendar__code-block pre {
+	margin: 0;
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.daily-preview-calendar__code-block code {
+	background: transparent;
+	padding: 0;
+}
+
+.daily-preview-calendar__preview.is-wrap .daily-preview-calendar__code-block {
+	max-height: none;
+}
+
+.daily-preview-calendar__hover-popover {
+	position: fixed;
+	z-index: 1000;
+	max-height: min(60vh, 480px);
+	overflow: auto;
+	padding: 10px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary);
+	box-shadow: var(--shadow-l);
+}
+
+.daily-preview-calendar__hover-popover-title {
+	font-weight: 600;
+	margin-bottom: 8px;
+	padding-bottom: 6px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	font-family: var(--dpc-ui-font-family, var(--font-interface));
+	font-size: var(--dpc-ui-font-size, var(--font-ui-small));
+}
+
+.daily-preview-calendar__hover-popover-body {
+	padding: 0;
+	overflow: visible;
+	max-height: none;
+}
+
+.daily-preview-calendar__preview .internal-link {
+	color: var(--link-color);
+	text-decoration: none;
+}
+
+.daily-preview-calendar__preview code {
+	font-size: 0.92em;
+	padding: 0 2px;
+	background: var(--code-background);
+	border-radius: 2px;
+}
+
+.daily-preview-calendar__preview mark {
+	background-color: var(--text-highlight-bg, rgba(255, 213, 0, 0.35));
+	color: inherit;
+}
+
+.daily-preview-calendar__kw-marker {
+	border-radius: 2px;
+	padding: 0 1px;
+}
+
+.daily-preview-calendar__kw-color {
+	font-weight: 600;
+}
+
+.daily-preview-calendar-settings__source,
+.daily-preview-calendar-settings__hint {
+	color: var(--text-muted);
+	font-size: var(--font-ui-small);
+}
+
+.daily-preview-calendar-settings__list .setting-item {
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+@container (max-width: 480px) {
+	.daily-preview-calendar__grid.is-week .daily-preview-calendar__body {
+		grid-template-columns: 1fr;
+		grid-template-rows: repeat(7, minmax(72px, 1fr));
+	}
+}
