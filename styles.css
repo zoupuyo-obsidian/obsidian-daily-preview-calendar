@@ -320,6 +320,21 @@
 	font-size: var(--dpc-ui-font-size, var(--font-ui-small));
 }
 
+.daily-preview-calendar__hover-popover-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+	padding-top: 8px;
+	border-top: 1px solid var(--background-modifier-border);
+}
+
+.daily-preview-calendar__hover-popover-actions button {
+	flex: 1 1 auto;
+	min-height: 36px;
+	min-width: 0;
+}
+
 .daily-preview-calendar__hover-popover-body {
 	padding: 0;
 	overflow: visible;

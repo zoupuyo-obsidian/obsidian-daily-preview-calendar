@@ -15,7 +15,7 @@ Daily note folder and date format follow the core **Daily notes** plugin setting
 - **UI language**: Japanese / English
 - **Separate UI and body fonts** (family + size)
 - **Line wrap** toggle: truncate to cell width (default) or wrap full line text
-- **Hover / long-press preview**: full note excerpt in a popup (desktop: hover; touch: long-press or context menu)
+- **Hover / long-press preview**: full note excerpt in a popup (desktop: hover; touch: long-press with open-note actions in the popup)
 - **Open location**: sidebar or main area (commands available for each)
 - **Click behavior**: sidebar view → open in main; main view → open in new tab
 - **Mobile** supported (`isDesktopOnly: false`)

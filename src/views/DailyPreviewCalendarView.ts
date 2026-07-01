@@ -1,4 +1,4 @@
-import { App, ItemView, Menu, moment, TFile, WorkspaceLeaf } from 'obsidian';
+import { App, ItemView, Menu, moment, Platform, TFile, WorkspaceLeaf } from 'obsidian';
 import type DailyPreviewCalendarPlugin from '../main';
 import {
 	getAllDailyNotesMap,
@@ -398,21 +398,42 @@ export class DailyPreviewCalendarView extends ItemView {
 			openNote();
 		});
 
-		root.addEventListener('contextmenu', (evt) => {
-			evt.preventDefault();
-			this.showCellMenu(evt, date, file, openNote, cellParts);
-		});
+		if (!Platform.isMobile) {
+			root.addEventListener('contextmenu', (evt) => {
+				evt.preventDefault();
+				this.showCellMenu(evt, date, file, openNote, cellParts);
+			});
+		} else {
+			root.addEventListener('contextmenu', (evt) => {
+				evt.preventDefault();
+			});
+		}
 
 		if (this.plugin.settings.hoverPreviewEnabled) {
 			this.hoverPreview.attach(root, () => {
 				if (!cellParts.filePath || cellParts.allItems.length === 0) {
 					return null;
 				}
-				return {
+				const options = {
 					title: this.formatCellTitle(date),
 					items: cellParts.allItems,
 					highlights: this.plugin.settings.wordHighlights,
 				};
+				if (Platform.isMobile) {
+					const actions = [
+						{ label: this.L('openNote'), onClick: openNote },
+					];
+					if (file) {
+						actions.push({
+							label: this.L('openNoteNewTab'),
+							onClick: () => {
+								void this.app.workspace.getLeaf('tab').openFile(file);
+							},
+						});
+					}
+					return { ...options, actions };
+				}
+				return options;
 			});
 		}
 
