@@ -47,7 +47,7 @@ export class HoverPreviewController {
 	}
 
 	hide(): void {
-		const doc = this.anchor?.ownerDocument ?? document;
+		const doc = this.anchor?.ownerDocument ?? activeDocument;
 		this.clearTimers();
 		this.clearTouchState();
 		this.removeDismissListeners();

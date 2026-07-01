@@ -108,7 +108,7 @@ export class DailyPreviewCalendarView extends ItemView {
 		);
 		this.registerEvent(
 			this.app.workspace.on('layout-change', () => {
-				if (this.app.workspace.activeLeaf !== this.leaf) {
+				if (this.app.workspace.getActiveViewOfType(DailyPreviewCalendarView) !== this) {
 					this.hoverPreview.hide();
 				}
 			}),
