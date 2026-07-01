@@ -2,10 +2,16 @@ import type { PreviewItem } from './previewContent';
 import { renderPreviewItems } from './previewRender';
 import type { WordHighlightRule } from './settings';
 
+export interface HoverPreviewAction {
+	label: string;
+	onClick: () => void;
+}
+
 export interface HoverPreviewOptions {
 	title: string;
 	items: PreviewItem[];
 	highlights: WordHighlightRule[];
+	actions?: HoverPreviewAction[];
 }
 
 const LONG_PRESS_MS = 550;
@@ -22,6 +28,8 @@ export class HoverPreviewController {
 	private touchStartY = 0;
 	private touchCell: HTMLElement | null = null;
 	private dismissCleanup: (() => void) | null = null;
+	/** Suppress synthetic mouse pointer events after touch (iOS ghost hover). */
+	private suppressMouseHoverUntil = 0;
 
 	isOpen(): boolean {
 		return this.popover !== null;
@@ -58,15 +66,18 @@ export class HoverPreviewController {
 
 		cell.addEventListener('click', onClickCapture, true);
 
-		cell.addEventListener('mouseenter', () => {
-			if (this.isTouchLikeEnvironment()) {
+		cell.addEventListener('pointerenter', (evt) => {
+			if (!this.isHoverPointer(evt.pointerType)) {
+				return;
+			}
+			if (Date.now() < this.suppressMouseHoverUntil) {
 				return;
 			}
 			this.scheduleShow(cell, getOptions);
 		});
 
-		cell.addEventListener('mouseleave', () => {
-			if (this.isTouchLikeEnvironment()) {
+		cell.addEventListener('pointerleave', (evt) => {
+			if (!this.isHoverPointer(evt.pointerType)) {
 				return;
 			}
 			this.scheduleHide();
@@ -106,11 +117,8 @@ export class HoverPreviewController {
 		this.show(anchor, options);
 	}
 
-	private isTouchLikeEnvironment(): boolean {
-		return (
-			typeof window !== 'undefined' &&
-			window.matchMedia('(hover: none), (pointer: coarse)').matches
-		);
+	private isHoverPointer(pointerType: string): boolean {
+		return pointerType === 'mouse' || pointerType === 'pen';
 	}
 
 	private beginTouchPress(
@@ -123,6 +131,7 @@ export class HoverPreviewController {
 		this.touchCell = cell;
 		this.touchStartX = x;
 		this.touchStartY = y;
+		this.suppressMouseHoverUntil = Date.now() + 700;
 		cell.addClass('is-touch-pressing');
 
 		this.clearLongPress();
@@ -234,6 +243,24 @@ export class HoverPreviewController {
 		});
 
 		renderPreviewItems(body, options.items, options.highlights, { wrap: true });
+
+		if (options.actions && options.actions.length > 0) {
+			const actionsEl = popover.createDiv({
+				cls: 'daily-preview-calendar__hover-popover-actions',
+			});
+			for (const action of options.actions) {
+				const btn = actionsEl.createEl('button', {
+					text: action.label,
+					cls: options.actions[0] === action ? 'mod-cta' : '',
+				});
+				btn.addEventListener('click', (evt) => {
+					evt.preventDefault();
+					evt.stopPropagation();
+					this.hide();
+					action.onClick();
+				});
+			}
+		}
 
 		const calRoot = doc.querySelector('.daily-preview-calendar-root');
 		if (calRoot instanceof HTMLElement) {

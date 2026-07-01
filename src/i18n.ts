@@ -42,7 +42,7 @@ const messages = {
 			'OFF（既定）: 行頭からセル幅で切り詰め。ON: 改行まで全文を折り返して表示。',
 		settingsHoverPreview: 'ホバー／長押しプレビュー',
 		settingsHoverPreviewDesc:
-			'デスクトップ: マウスオーバーで全文ポップアップ。タッチ: 長押しまたはコンテキストメニュー「全文プレビュー」。',
+			'デスクトップ: マウスオーバーで全文ポップアップ。タッチ: 長押しで全文ポップアップ（ポップアップ内からノートを開ける）。',
 		showFullPreview: '全文プレビュー',
 		settingsSections: 'セクション表示',
 		settingsSectionsDesc:
@@ -125,7 +125,7 @@ const messages = {
 			'Off (default): truncate each line to cell width. On: wrap full line text until newline.',
 		settingsHoverPreview: 'Hover / long-press preview',
 		settingsHoverPreviewDesc:
-			'Desktop: mouse-over popup with full note excerpt. Touch: long-press or context menu "Full preview".',
+			'Desktop: mouse-over popup with full note excerpt. Touch: long-press for popup (open note from popup actions).',
 		showFullPreview: 'Full preview',
 		settingsSections: 'Section visibility',
 		settingsSectionsDesc:
