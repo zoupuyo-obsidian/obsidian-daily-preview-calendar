@@ -1,3 +1,12 @@
+## Daily Preview Calendar 1.0.10
+
+- Fix CI/lint: replace deprecated `activeLeaf` with `getActiveViewOfType`.
+- Requires Obsidian 1.13.0+.
+
+## Daily Preview Calendar 1.0.9
+
+- Same lint fix as 1.0.10 for Obsidian 1.7.2 through 1.12.x.
+
 ## Daily Preview Calendar 1.0.8
 
 - Fix desktop hover preview stopping after the first show (pointer-through popover, hover recheck after dismiss).
