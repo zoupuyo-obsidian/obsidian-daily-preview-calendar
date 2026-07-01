@@ -28,8 +28,15 @@ export class HoverPreviewController {
 	private touchStartY = 0;
 	private touchCell: HTMLElement | null = null;
 	private dismissCleanup: (() => void) | null = null;
-	/** Suppress synthetic mouse pointer events after touch (iOS ghost hover). */
+	/** Suppress synthetic mouse events after touch (iOS ghost hover). */
 	private suppressMouseHoverUntil = 0;
+	private lastMouseX = 0;
+	private lastMouseY = 0;
+	private mouseTrackerInstalled = false;
+	private readonly cellGetOptions = new WeakMap<
+		HTMLElement,
+		() => HoverPreviewOptions | null
+	>();
 
 	isOpen(): boolean {
 		return this.popover !== null;
@@ -40,16 +47,21 @@ export class HoverPreviewController {
 	}
 
 	hide(): void {
+		const doc = this.anchor?.ownerDocument ?? document;
 		this.clearTimers();
 		this.clearTouchState();
 		this.removeDismissListeners();
 		this.removePopover();
+		this.scheduleHoverRecheck(doc);
 	}
 
 	attach(
 		cell: HTMLElement,
 		getOptions: () => HoverPreviewOptions | null,
 	): { onClickCapture: (evt: MouseEvent) => void } {
+		this.cellGetOptions.set(cell, getOptions);
+		this.ensureMouseTracker(cell.ownerDocument);
+
 		const onClickCapture = (evt: MouseEvent) => {
 			if (this.suppressNextClick) {
 				evt.preventDefault();
@@ -66,20 +78,21 @@ export class HoverPreviewController {
 
 		cell.addEventListener('click', onClickCapture, true);
 
-		cell.addEventListener('pointerenter', (evt) => {
-			if (!this.isHoverPointer(evt.pointerType)) {
+		cell.addEventListener('mouseenter', () => {
+			if (Date.now() < this.suppressMouseHoverUntil) {
 				return;
 			}
-			if (Date.now() < this.suppressMouseHoverUntil) {
+			if (this.isOpen() && this.anchor !== cell) {
+				const options = getOptions();
+				if (options && options.items.length > 0) {
+					this.show(cell, options);
+				}
 				return;
 			}
 			this.scheduleShow(cell, getOptions);
 		});
 
-		cell.addEventListener('pointerleave', (evt) => {
-			if (!this.isHoverPointer(evt.pointerType)) {
-				return;
-			}
+		cell.addEventListener('mouseleave', () => {
 			this.scheduleHide();
 		});
 
@@ -117,8 +130,47 @@ export class HoverPreviewController {
 		this.show(anchor, options);
 	}
 
-	private isHoverPointer(pointerType: string): boolean {
-		return pointerType === 'mouse' || pointerType === 'pen';
+	private ensureMouseTracker(doc: Document): void {
+		if (this.mouseTrackerInstalled) {
+			return;
+		}
+		this.mouseTrackerInstalled = true;
+		doc.addEventListener(
+			'mousemove',
+			(evt) => {
+				this.lastMouseX = evt.clientX;
+				this.lastMouseY = evt.clientY;
+			},
+			{ passive: true },
+		);
+	}
+
+	private scheduleHoverRecheck(doc: Document): void {
+		window.requestAnimationFrame(() => {
+			if (this.isOpen()) {
+				return;
+			}
+			this.recheckHoverUnderCursor(doc);
+		});
+	}
+
+	private recheckHoverUnderCursor(doc: Document): void {
+		if (Date.now() < this.suppressMouseHoverUntil) {
+			return;
+		}
+		const el = doc.elementFromPoint(this.lastMouseX, this.lastMouseY);
+		if (!(el instanceof Element)) {
+			return;
+		}
+		const cell = el.closest('.daily-preview-calendar__cell');
+		if (!(cell instanceof HTMLElement)) {
+			return;
+		}
+		const getOptions = this.cellGetOptions.get(cell);
+		if (!getOptions) {
+			return;
+		}
+		this.scheduleShow(cell, getOptions);
 	}
 
 	private beginTouchPress(
@@ -180,6 +232,10 @@ export class HoverPreviewController {
 		getOptions: () => HoverPreviewOptions | null,
 	): void {
 		this.clearShowTimer();
+		if (this.hideTimer !== null) {
+			window.clearTimeout(this.hideTimer);
+			this.hideTimer = null;
+		}
 		this.showTimer = window.setTimeout(() => {
 			const options = getOptions();
 			if (!options || options.items.length === 0) {
@@ -232,6 +288,8 @@ export class HoverPreviewController {
 		const popover = doc.body.createDiv({
 			cls: 'daily-preview-calendar__hover-popover is-measuring',
 		});
+		const hasActions = !!(options.actions && options.actions.length > 0);
+		popover.toggleClass('has-actions', hasActions);
 
 		popover.createDiv({
 			cls: 'daily-preview-calendar__hover-popover-title',
@@ -281,12 +339,20 @@ export class HoverPreviewController {
 		}
 
 		popover.addEventListener('mouseenter', () => {
+			if (!hasActions) {
+				return;
+			}
 			if (this.hideTimer !== null) {
 				window.clearTimeout(this.hideTimer);
 				this.hideTimer = null;
 			}
 		});
-		popover.addEventListener('mouseleave', () => this.scheduleHide());
+		popover.addEventListener('mouseleave', () => {
+			if (!hasActions) {
+				return;
+			}
+			this.scheduleHide();
+		});
 
 		this.popover = popover;
 		this.positionPopover(anchor, popover);

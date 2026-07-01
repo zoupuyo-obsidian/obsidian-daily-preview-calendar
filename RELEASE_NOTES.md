@@ -1,3 +1,13 @@
+## Daily Preview Calendar 1.0.8
+
+- Fix desktop hover preview stopping after the first show (pointer-through popover, hover recheck after dismiss).
+- Narrow layout-change dismiss to when the calendar tab is no longer active.
+- Requires Obsidian 1.13.0+.
+
+## Daily Preview Calendar 1.0.7
+
+- Same fixes as 1.0.8 for Obsidian 1.7.2 through 1.12.x.
+
 ## Daily Preview Calendar 1.0.6
 
 - Fix hover preview on Windows PCs with touch screens (use pointer type instead of coarse-pointer media query).
